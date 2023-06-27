@@ -29,14 +29,12 @@ data_formatted <- merged_data %>%
   mutate(unit = ifelse(parameter == "depth", "CM",
                 ifelse(parameter == "temp", "C",
                 ifelse(parameter == "pH", "UNITS",
-                ifelse(parameter == "SpC", "uS/CM",
-                ifelse(parameter %in% c("DOC", "DIC", "K", "Mg", "Na", "Cl", "SO4", "PO4", "NO3", "Ca"), "MG/L", ""))))),
+                ifelse(parameter == "SpC", "uS/CM", "MG/L")))),
          constituent = ifelse(parameter == "depth", "PHYS",
                        ifelse(parameter %in% c("pH", "SpC", "temp"), "CHEM",
                        ifelse(parameter %in% c("DOC", "DIC"), "C",
                        ifelse(parameter %in% c("SO4", "Cl", "NO3", "PO4"), "ANION",
                        ifelse(parameter %in% c("Mg", "Ca", "Na", "K"), "CATION", ""))))),
-         unit = ifelse(constituent %in% c("CATION", "ANION", "C"), "MG/L",""),
          sample_date = mdy(sample_date),
          sample_time = hm(sample_time))
 
