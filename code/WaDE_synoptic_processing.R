@@ -12,7 +12,7 @@ source("code/0-packages.R")
 
 # Step 1. Load Data ---------------------------------------------------------------------
 
-sampling_data = read.csv("raw/WaDE SYNOPTIC_2023-04-12.csv") 
+sampling_data = read.csv("raw/WaDE SYNOPTIC_2023-06-23.csv") 
 
 # Step 2. Load Sampling Locations -------------------------------------------------------
 
@@ -25,7 +25,7 @@ merged_data <- merge(synoptic_sites, sampling_data, by = "site_name")
 
 # Step 4. Transform data and prepare for export -----------------------------------------
 data_formatted <- merged_data %>%
-  pivot_longer(c("depth":"K"), values_to = "result_value", names_to = "parameter") %>%
+  pivot_longer(c("depth":"DOC"), values_to = "result_value", names_to = "parameter") %>%
   mutate(unit = ifelse(parameter == "depth", "CM",
                 ifelse(parameter == "temp", "C",
                 ifelse(parameter == "pH", "UNITS",
@@ -39,7 +39,7 @@ data_formatted <- merged_data %>%
          sample_time = hm(sample_time))
 
 #Save formatted data as a .csv
-write.csv(data_formatted, "processed/SYNOPTIC_2023-04-12.csv", row.names = FALSE)
+write.csv(data_formatted, "processed/SYNOPTIC_2023-06-23.csv", row.names = FALSE)
   
 
 

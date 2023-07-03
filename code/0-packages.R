@@ -29,6 +29,7 @@ mapviewOptions(
 )
 
 library(exactextractr)
+library(leafsync)
 
 
 # functions 

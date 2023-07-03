@@ -28,8 +28,8 @@ Land use data can be directly obtained from the National Land Classification Dat
 nlcd_2019 <- FedData::get_nlcd(template = EFPC_HUC, label = "EFPC NLCD 2019", year = 2019)
 ```
 
-```{r, echo = FALSE, message=FALSE, include=FALSE, warning=FALSE}
 
+```{r, echo = FALSE, message=FALSE, include=FALSE, warning=FALSE}
 #This block assigns the correct color scheme to the data based on the NLCD color legend.
 nlcd_2019 <- raster::as.factor(nlcd_2019)
 nlcd_2019@data@attributes[[1]] <- as.data.frame(nlcd_colors())
@@ -49,8 +49,8 @@ WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_locations.csv") %>%
 ### Overview of Study Area
 The map below visualizes the study area for the WaDE SFA. The sampling locations are colorized based on their major tributary catchment. The EFK points have been separated into a unique class. The NLCD data can be toggled on/off from the legend.
 ```{r, message=FALSE, warning=FALSE, include = TRUE, echo=FALSE}
-mapview(WaDE_sites, zcol = "network", layer.name = "Network", alpha = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites$network)), "Spectral")) +
-mapview(EFPC_catchments, alpha.regions = 0, col.region = "gray", color = "black", legend = FALSE, lwd=1) +
+mapview(WaDE_sites, zcol = "network", layer.name = "Network", alpha.region = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites$network)), "Spectral")) +
+mapview(EFPC_catchments, alpha.regions = 0.2, col.region = "lightgreen", color = "black", legend = FALSE, lwd=1) +
 mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1) +
 mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2) +
 mapview(nlcd_2019, col.regions = data, att = "Class", layer.name = "Landcover Class", label = FALSE, legend = TRUE, alpha = 0.5, hide = TRUE)
@@ -65,7 +65,7 @@ WaDE_sites <- st_intersection(WaDE_sites, EFPC_catchments)
 
 
 ### Exploring Land Use in the EFPC Watershed
-```{r, echo = TRUE, include = FA}
+```{r, echo = TRUE}
 nlcd_colors()
 ```
 
@@ -97,6 +97,7 @@ sites <- st_intersection(merged, WaDE_sites)
 mapview(sites, layer.name = "Sampling Locations", zcol = "network", alpha = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(sites$network)), "Spectral"))+
 mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1) +
 mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2) +
+
 mapview(merged, zcol = "Developed", layer.name = "Developed", col.regions = RColorBrewer::brewer.pal(10, "Reds"), hide = TRUE) +
 mapview(merged, zcol = "Forest", layer.name = "Forested", col.regions = RColorBrewer::brewer.pal(10, "Greens"), hide = TRUE) +
 mapview(merged, zcol = "Wetland", layer.name = "Wetlands", col.regions = RColorBrewer::brewer.pal(10, "Blues"), hide = TRUE) +
@@ -106,4 +107,44 @@ mapview(merged, zcol = "Herbaceous", layer.name = "Herbaceous", col.regions = RC
 
 ### Synoptic Survey Sampling Results
 The sampling data are shown below.
+```{r, include = FALSE, echo = FALSE, message=F,warning=F}
 
+Apr2023_synoptic <- read.csv("processed/SYNOPTIC_2023-04-12.csv")
+Apr2023_synoptic <- merge(Apr2023_synoptic, sites) %>%
+  st_as_sf()
+
+June2023_synoptic <- read.csv("processed/SYNOPTIC_2023-06-23.csv")
+June2023_synoptic <- merge(June2023_synoptic, sites) %>%
+  st_as_sf()
+
+
+```
+
+
+```{r April 2023 Map, echo=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+
+
+map_Apr2023 <-
+  mapview(subset(Apr2023_synoptic, parameter == "depth"), layer.name = "Flow Status", zcol = "flow_status", alpha.region = 1, label = "site_name", col.regions = c("red", "#57cc99","#ffd60a" )) +
+  #mapview(subset(Apr2023_synoptic, parameter == "SO4"), layer.name = "Sulfate", zcol = "result_value", alpha.region = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(5, "Reds"), hide = TRUE) +
+  mapview(subset(Apr2023_synoptic, parameter == "DOC"), layer.name = "DOC", zcol = "result_value", alpha.region = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(5, "Greys"), hide = TRUE) +
+  mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1) +
+  mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2) +
+  mapview(EFPC_HUC, alpha.regions = 0, col.region = "lightgreen", color = "darkgreen", legend = FALSE, lwd=2) 
+
+```
+
+```{r June 2023 Map, echo=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+
+
+map_June2023 <-
+  mapview(subset(June2023_synoptic, parameter == "depth"), layer.name = "Flow Status", zcol = "flow_status", alpha.region = 1, label = "site_name", col.regions = c("red", "#57cc99","#ffd60a" )) +
+  #mapview(subset(June2023_synoptic, parameter == "SO4"), layer.name = "Sulfate", zcol = "result_value", alpha.region = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(5, "Reds"), hide = TRUE) +
+  mapview(subset(June2023_synoptic, parameter == "DOC"), layer.name = "DOC", zcol = "result_value", alpha.region = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(5, "Greys"), hide = TRUE) +
+  mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1) +
+  mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2) +
+ mapview(EFPC_HUC, alpha.regions = 0, col.region = "lightgreen", color = "darkgreen", legend = FALSE, lwd=2) 
+
+map_Apr2023 | map_June2023
+
+```
