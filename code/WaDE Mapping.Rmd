@@ -49,11 +49,11 @@ WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_locations.csv") %>%
 ### Overview of Study Area
 The map below visualizes the study area for the WaDE SFA. The sampling locations are colorized based on their major tributary catchment. The EFK points have been separated into a unique class. The NLCD data can be toggled on/off from the legend.
 ```{r, message=FALSE, warning=FALSE, include = TRUE, echo=FALSE}
-mapview(WaDE_sites, zcol = "network", layer.name = "Network", alpha = 1, col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites$network)), "Spectral")) +
+mapview(WaDE_sites, zcol = "network", layer.name = "Network", alpha = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites$network)), "Spectral")) +
 mapview(EFPC_catchments, alpha.regions = 0, col.region = "gray", color = "black", legend = FALSE, lwd=1) +
 mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1) +
 mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2) +
-mapview(nlcd_2019, col.regions = data, att = "Class", layer.name = "Landcover Class", label = FALSE, legend = FALSE, alpha = 0.5, hide = TRUE)
+mapview(nlcd_2019, col.regions = data, att = "Class", layer.name = "Landcover Class", label = FALSE, legend = TRUE, alpha = 0.5, hide = TRUE)
 
 ```
 
@@ -65,7 +65,7 @@ WaDE_sites <- st_intersection(WaDE_sites, EFPC_catchments)
 
 
 ### Exploring Land Use in the EFPC Watershed
-```{r}
+```{r, echo = TRUE, include = FA}
 nlcd_colors()
 ```
 
@@ -90,8 +90,7 @@ merged <- merge(EFPC_catchments, landuse_fracs, by = "OBJECTID") %>%
          Wetland = frac_90 + frac_95,
          Herbaceous = frac_52 + frac_71 + frac_81)
  
-sites <- st_intersection(merged, WaDE_sites)%>%
-  dplyr::select(-c(NHDPlusID, SourceFC, GridCode, VPUID, SHAPE_Leng, SHAPE_Area, OBJECTID.1, AreaSqKm.1))
+sites <- st_intersection(merged, WaDE_sites)
 ```
 
 ```{r, include = TRUE, echo = FALSE, message = FALSE, warning=FALSE}
@@ -104,3 +103,7 @@ mapview(merged, zcol = "Wetland", layer.name = "Wetlands", col.regions = RColorB
 mapview(merged, zcol = "Herbaceous", layer.name = "Herbaceous", col.regions = RColorBrewer::brewer.pal(10, "Oranges"), hide = TRUE)
 
 ```
+
+### Synoptic Survey Sampling Results
+The sampling data are shown below.
+

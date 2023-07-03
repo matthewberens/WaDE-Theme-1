@@ -1,20 +1,20 @@
 ---
-title: "README"
-author: "Matthew J. Berens"
-date: "2023-07-03"
 output: github_document
-editor_options: 
-  chunk_output_type: console
 ---
 
-```{r setup, include = FALSE}
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  out.width = "100%",
-  dpi = 72
+  comment = "#>"
 )
 ```
+
+# WaDE-Theme-1
+
+<!-- badges: start -->
+<!-- badges: end -->
 
 ### Project Website
 + [ORNL WaDE SFA](https://wade.ornl.gov/) - Webpage for project
@@ -26,13 +26,3 @@ knitr::opts_chunk$set(
 
 ![FIGURE 1 - Knowledge and awareness of the current NIH guidelines on rigor and reproducibility.](Current_WaDE_logo.svg)
   
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
