@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/1059711/7d449856f99b44f78b40a8cc0c9a5879
+bundleId: https://api.rpubs.com/api/v1/document/1059711/7d449856f99b44f78b40a8cc0c9a5879
+url: http://rpubs.com/mjberens/1059711
+when: 1688407460.21318
+lastSyncTime: 1688407460.21319

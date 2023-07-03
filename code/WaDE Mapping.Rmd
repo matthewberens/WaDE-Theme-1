@@ -1,0 +1,106 @@
+---
+title: "WaDE Mapping Overview"
+author: "Matthew J Berens"
+date: "2023-06-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Documents/GitHub/WaDE-Theme-1")
+```
+
+```{r, echo = FALSE, include=FALSE}
+source("code/0-packages.R")
+```
+
+### Introduction and Data Access
+The boundary of the EFPC watershed is accessed by the `get_huc()` function in the `nhdplusTools` package. The remaining shapefiles were accessed externally through the NHDPlus dataset and manually processed in QGIS. At this point, NHDPlus data for the EFPC watershed are not available through the `nhdplusTools` package.
+```{r, echo = FALSE, include=TRUE, message=FALSE, warning = FALSE}
+EFPC_HUC <- st_set_crs(get_huc(id = "060102070302", buffer = 0.5, type = "huc12"), 4326)
+EFPC_catchments <- st_set_crs(read_sf("GIS_data/EFPC Catchments.shp"), 4326)
+EFPC_fl <- st_set_crs(read_sf("GIS_data/EFPC Flowlines.shp"), 4326)
+EFPC_main <- st_set_crs(read_sf("GIS_data/East Fork Poplar Creek.shp"), 4326)
+```
+
+Land use data can be directly obtained from the National Land Classification Database (NLCD) through the `get_nlcd()` function in the `FedData` package. The data are available for select years from 2001-2019. The year can be selected by changing the `year = ####` option in the `get_nlcd()` function.
+```{r, include = TRUE, echo = FALSE, message = FALSE}
+nlcd_2019 <- FedData::get_nlcd(template = EFPC_HUC, label = "EFPC NLCD 2019", year = 2019)
+```
+
+```{r, echo = FALSE, message=FALSE, include=FALSE, warning=FALSE}
+
+#This block assigns the correct color scheme to the data based on the NLCD color legend.
+nlcd_2019 <- raster::as.factor(nlcd_2019)
+nlcd_2019@data@attributes[[1]] <- as.data.frame(nlcd_colors())
+data <- nlcd_2019@data@attributes[[1]] %>%
+  dplyr::left_join(nlcd_colors()) %$%
+  Color
+```
+
+The WaDE SFA sampling locations are stored in a csv in the GitHub directory. The points must be imported and converted to a spatial object with the `st_as_sf()` function. Ensure that the CRS is set to 4326.
+```{r}
+WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_locations.csv") %>%
+   st_as_sf(coords = c('longitude', 'latitude')) %>%
+    st_set_crs(4326)
+```
+
+
+### Overview of Study Area
+The map below visualizes the study area for the WaDE SFA. The sampling locations are colorized based on their major tributary catchment. The EFK points have been separated into a unique class. The NLCD data can be toggled on/off from the legend.
+```{r, message=FALSE, warning=FALSE, include = TRUE, echo=FALSE}
+mapview(WaDE_sites, zcol = "network", layer.name = "Network", alpha = 1, col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites$network)), "Spectral")) +
+mapview(EFPC_catchments, alpha.regions = 0, col.region = "gray", color = "black", legend = FALSE, lwd=1) +
+mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1) +
+mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2) +
+mapview(nlcd_2019, col.regions = data, att = "Class", layer.name = "Landcover Class", label = FALSE, legend = FALSE, alpha = 0.5, hide = TRUE)
+
+```
+
+
+Now, we can determine which catchment each of the WaDE are in and update the `WaDE_sites` data frame to include the catchment data
+```{r, message = FALSE, warning = FALSE}
+WaDE_sites <- st_intersection(WaDE_sites, EFPC_catchments)
+```
+
+
+### Exploring Land Use in the EFPC Watershed
+```{r}
+nlcd_colors()
+```
+
+
+```{r, include = FALSE, echo = FALSE, message = FALSE, warning=FALSE}
+
+#This code calculates the zonal statistics for each of the EFPC catchments. The results are exported as a df that is saved as 
+
+landuse_fracs <- exact_extract(nlcd_2019, EFPC_catchments, fun = 'frac', force_df = TRUE)
+
+#Assign the catchments their correct OBJECTID
+landuse_fracs$OBJECTID <- EFPC_catchments$OBJECTID
+
+merged <- merge(EFPC_catchments, landuse_fracs, by = "OBJECTID") %>%
+  dplyr::select(-c(NHDPlusID, SourceFC, GridCode, VPUID, SHAPE_Leng, SHAPE_Area)) %>%
+  mutate(Developed = frac_21 + frac_22 + frac_23 + frac_24,
+         Water = frac_11,
+         Forest = frac_41 + frac_42 + frac_43,
+         Shrub = frac_52,
+         Grassland = frac_71,
+         Pasture = frac_81,
+         Wetland = frac_90 + frac_95,
+         Herbaceous = frac_52 + frac_71 + frac_81)
+ 
+sites <- st_intersection(merged, WaDE_sites)%>%
+  dplyr::select(-c(NHDPlusID, SourceFC, GridCode, VPUID, SHAPE_Leng, SHAPE_Area, OBJECTID.1, AreaSqKm.1))
+```
+
+```{r, include = TRUE, echo = FALSE, message = FALSE, warning=FALSE}
+mapview(sites, layer.name = "Sampling Locations", zcol = "network", alpha = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(sites$network)), "Spectral"))+
+mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1) +
+mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2) +
+mapview(merged, zcol = "Developed", layer.name = "Developed", col.regions = RColorBrewer::brewer.pal(10, "Reds"), hide = TRUE) +
+mapview(merged, zcol = "Forest", layer.name = "Forested", col.regions = RColorBrewer::brewer.pal(10, "Greens"), hide = TRUE) +
+mapview(merged, zcol = "Wetland", layer.name = "Wetlands", col.regions = RColorBrewer::brewer.pal(10, "Blues"), hide = TRUE) +
+mapview(merged, zcol = "Herbaceous", layer.name = "Herbaceous", col.regions = RColorBrewer::brewer.pal(10, "Oranges"), hide = TRUE)
+
+```
