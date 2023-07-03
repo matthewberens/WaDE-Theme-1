@@ -14,18 +14,16 @@ source("code/0-packages.R")
 
 sampling_data = read.csv("raw/WaDE SYNOPTIC_2023-06-23.csv") 
 
-# Step 2. Load Sampling Locations -------------------------------------------------------
-
-synoptic_sites <- read.csv("raw/WaDE SYNOPTIC_locations.csv") 
-
-# Step 3. Merge site info and sampling data ---------------------------------------------
-
-merged_data <- merge(synoptic_sites, sampling_data, by = "site_name")
 
 
-# Step 4. Transform data and prepare for export -----------------------------------------
-data_formatted <- merged_data %>%
-  pivot_longer(c("depth":"DOC"), values_to = "result_value", names_to = "parameter") %>%
+# Step 2. Calculate TIC  ----------------------------------------------------------------
+
+sampling_data$DIC = sampling_data$TC - sampling_data$DOC
+
+
+# Step 3. Transform data and prepare for export -----------------------------------------
+data_formatted <- sampling_data %>%
+  pivot_longer(c("depth":"DIC"), values_to = "result_value", names_to = "parameter") %>%
   mutate(unit = ifelse(parameter == "depth", "CM",
                 ifelse(parameter == "temp", "C",
                 ifelse(parameter == "pH", "UNITS",
