@@ -16,5 +16,4 @@
   Berens](https://www.ornl.gov/staff-profile/matthew-j-berens) -
   Environmental Sciences Division, Oak Ridge National Laboratory
 
-![FIGURE 1 - Knowledge and awareness of the current NIH guidelines on
-rigor and reproducibility.](Current_WaDE_logo.svg)
+![](README_files/WaDE_logo.png)
