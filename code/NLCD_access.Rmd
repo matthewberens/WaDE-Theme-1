@@ -1,0 +1,150 @@
+---
+title: "WaDE - NLCD Access and Processing"
+author: "Matthew J Berens"
+date: "2023-07-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Documents/GitHub/WaDE-Theme-1")
+```
+
+```{r, echo = FALSE, include=FALSE}
+library(tidyverse)
+library(lubridate)     # 1.6.0
+library(cowplot)
+library(knitr)
+library(sf)
+library(raster)
+library(nhdplusTools)
+library(FedData)
+library(magrittr)
+library(mapview)
+library(leaflet)
+library(exactextractr)
+#Manually define mapview options.
+mapviewOptions(
+  basemaps = c("CartoDB.Positron", "Esri.WorldImagery"),
+  homebutton = FALSE,
+  query.position = "topright",
+  query.digits = 2,
+  query.prefix = "",
+  legend.pos = "bottomright"
+)
+```
+
+### Introduction and Data Access
+The boundary of the EFPC watershed is accessed by the `get_huc()` function in the `nhdplusTools` package. The remaining shapefiles were accessed externally through the NHDPlus dataset and manually processed in QGIS. At this point, NHDPlus data for the EFPC watershed are not available through the `nhdplusTools` package.
+```{r, echo = TRUE, include=TRUE, message=FALSE, warning = FALSE}
+#This shapefile is accessed directly from nhdplusTools.
+EFPC_HUC <- st_set_crs(get_huc(id = "060102070302", buffer = 0.5, type = "huc12"), 4326)
+
+#These shapefiles were prepared manually and stored in a local directory.
+EFPC_catchments <- st_set_crs(read_sf("GIS_data/EFPC Catchments.shp"), 4326)
+EFPC_fl <- st_set_crs(read_sf("GIS_data/EFPC Flowlines.shp"), 4326)
+EFPC_main <- st_set_crs(read_sf("GIS_data/East Fork Poplar Creek.shp"), 4326)
+```
+
+
+
+Land use data can be directly obtained from the National Land Classification Database (NLCD) through the `get_nlcd()` function in the `FedData` package. The data are available for select years from 2001-2019. The year can be selected by changing the `year = ####` option in the `get_nlcd()` function.
+```{r, include = TRUE, echo = TRUE, message = FALSE}
+nlcd_2019 <- FedData::get_nlcd(template = EFPC_HUC, label = "EFK NLCD 2019", year = 2019)
+```
+
+
+The following block of code creates the correct color palete for the NLCD legend. The color values are obtained from the `nlcd_colors()` function in the `FedData` package.
+```{r, echo = TRUE, message=FALSE, include=TRUE, warning=FALSE}
+#This makes sure the NLCD dataset is rasterized.
+nlcd_2019 <- raster::as.factor(nlcd_2019)
+
+#Assign the hex codes to the correct landuse types in the NLCD.
+nlcd_2019@data@attributes[[1]] <- as.data.frame(nlcd_colors())
+data <- nlcd_2019@data@attributes[[1]] %>%
+  dplyr::left_join(nlcd_colors()) %$%
+  Color
+```
+
+The WaDE SFA sampling locations are stored in a csv in a local repository. The following block of code imports the sampling locations and converts the file to a spatial object with the `st_as_sf()` function. Ensure that the CRS is set to 4326.
+```{r}
+WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_locations.csv") %>%
+   st_as_sf(coords = c('longitude', 'latitude')) %>%
+    st_set_crs(4326)
+```
+
+
+### Overview of Study Area
+The map below visualizes the study area for the WaDE SFA synoptic surveys. The sampling locations are colorized based on their major tributary catchment. The EFK points have been separated into a unique class. The NLCD data can be toggled on/off from the legend.
+```{r, message=FALSE, warning=FALSE, include = TRUE, echo=FALSE}
+mapview(WaDE_sites, zcol = "network", layer.name = "Sampling Locations", alpha.region = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites$network)), "Spectral")) +
+mapview(EFPC_catchments, alpha.regions = 0.2, col.region = "lightgreen", color = "black", legend = FALSE, lwd=1, layer.name = "EFK Catchments") +
+mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1, layer.name = "NHD Flowlines") +
+mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2, layer.name = "EFK Main Branch") +
+mapview(nlcd_2019, col.regions = data, att = "Class", layer.name = "Landcover Class", label = FALSE, legend = TRUE, alpha = 0.5, hide = TRUE)
+
+```
+
+
+
+The following block of code uses `st_intersection` in the `sf` package to determine which tributary catchment each of the sampling locations are in and update the `WaDE_sites` data frame to include the catchment information.
+```{r, message = FALSE, warning = FALSE}
+WaDE_sites <- st_intersection(WaDE_sites, EFPC_catchments)
+```
+
+
+### Land Cover Calculations
+
+Next, I used a series of calculations to bin the land use types in the EFPC watershed into major groups including Developed, Water, Forest, Shrub, Grassland, Pasture, Wetland, and Herbaceous. 
+```{r, echo = TRUE, results = 'hide', message = FALSE, warning=FALSE}
+
+#This calculates the zonal statistics for each of the EFPC catchments. The results are exported as the dataframe 'landuse_fracs'. 
+landuse_fracs <- exact_extract(nlcd_2019, EFPC_catchments, fun = 'frac', force_df = TRUE)
+
+#This assigns the catchments the correct OBJECTID from the NHD dataset.
+landuse_fracs$OBJECTID <- EFPC_catchments$OBJECTID
+
+#This merges our EFPC catchments with the calculated land use distrubtions from the NLCD and sums the major categories.
+EFPC_catchments_landuse <- merge(EFPC_catchments, landuse_fracs, by = "OBJECTID") %>%
+  dplyr::select(-c(NHDPlusID, SourceFC, GridCode, VPUID, SHAPE_Leng, SHAPE_Area)) %>%
+  mutate(Developed = frac_21 + frac_22 + frac_23 + frac_24,
+         Water = frac_11,
+         Forest = frac_41 + frac_42 + frac_43,
+         Shrub = frac_52,
+         Grassland = frac_71,
+         Pasture = frac_81,
+         Wetland = frac_90 + frac_95,
+         Herbaceous = frac_52 + frac_71 + frac_81)
+ 
+
+#Merge the catchment land use percentages with the sampling site locations
+WaDE_sites_landuse <- st_intersection(EFPC_catchments_landuse, WaDE_sites) %>%
+  dplyr::select(-c(AreaSqKm.1))
+
+#Export combined land use calcualtions with sampling locations
+#st_write(WaDE_sites_landuse, "GIS_data/WaDE_sites_landuse.gpkg", update = TRUE)
+```
+
+
+Note that the summary calculations include identifiers such as "frac_11", "frac_41", etc. This represents the percentage of each catchment that falls within one of the NLCD land use types. The number that comes after "frac_" is from the NLCD data set. The legend from the NLCD is included before to show what each number represents.
+```{r}
+nlcd_colors()
+```
+
+### Summary Map
+
+Here is a real quick and dirty map of the results. The legends all show up at once but if you toggle the layers on/off once if seems to fix it. I can make something nice if needed!
+```{r, include = TRUE, echo = FALSE, message = FALSE, warning=FALSE}
+mapview(WaDE_sites_landuse, layer.name = "Sampling Locations", zcol = "network", alpha = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites_landuse$network)), "Spectral"))+
+mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1, layer.name = "NHD Flowlines") +
+mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2, layer.name = "EFK Main Branch") +
+mapview(EFPC_catchments_landuse, zcol = "Developed", layer.name = "Developed", col.regions = RColorBrewer::brewer.pal(10, "Reds"), hide = TRUE) +
+mapview(EFPC_catchments_landuse, zcol = "Forest", layer.name = "Forested", col.regions = RColorBrewer::brewer.pal(10, "Greens"), hide = TRUE) +
+mapview(EFPC_catchments_landuse, zcol = "Wetland", layer.name = "Wetlands", col.regions = RColorBrewer::brewer.pal(10, "Blues"), hide = TRUE) +
+mapview(EFPC_catchments_landuse, zcol = "Herbaceous", layer.name = "Herbaceous", col.regions = RColorBrewer::brewer.pal(10, "Oranges"), hide = TRUE)
+
+```
+
+
+
+
