@@ -71,22 +71,30 @@ map_Apr2023 | map_June2023
 ```
 
 
+```{r June 2023 Map, echo=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+  mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1, layer.name = "NHD Flowlines") +
+  mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2, layer.name = "EFK Main Branch") +
+  mapview(EFPC_HUC, alpha.regions = 0, col.region = "lightgreen", color = "darkgreen", legend = FALSE, lwd=2) +
+  mapview(subset(June2023_synoptic, parameter == "Ca"), layer.name = "Silicon", zcol = "result_value", alpha.region = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(20, "Blues")) 
+```
+
+
 
 ```{r, message=FALSE, warning = FALSE, fig.cap="Stuff"}
 June2023_synoptic <- read.csv("processed/SYNOPTIC_2023-06-23.csv")
 
-June2023_synoptic <- merge(June2023_synoptic, WaDE_sites_landuse)
+June2023_synoptic <- merge(June2023_synoptic, st_drop_geometry(WaDE_sites_landuse))
 
 June2023_synoptic %>%
-  subset(parameter == "DIC") %>%
+  subset(parameter == "SpC") %>%
   ggplot(aes(y = result_value)) +
-  geom_point(aes(x = frac_21), shape = 21, fill = "#7678ed") +
+  geom_point(aes(x = frac_21, size = AreaSqKm), shape = 21, fill = "#7678ed") +
   geom_smooth(aes(x = frac_21), method = lm, se = FALSE, color = "#7678ed") +
-  geom_point(aes(x = frac_22), shape = 21, fill = "#f7b801") +
+  geom_point(aes(x = frac_22, size = AreaSqKm), shape = 21, fill = "#f7b801") +
   geom_smooth(aes(x = frac_22), method = lm, se = FALSE, color = "#f7b801") +
-  geom_point(aes(x = frac_23), shape = 21, fill = "#f18701") +
+  geom_point(aes(x = frac_23, size = AreaSqKm), shape = 21, fill = "#f18701") +
   geom_smooth(aes(x = frac_23), method = lm, se = FALSE, color = "#f18701") +
-  geom_point(aes(x = frac_24), shape = 21, fill = "#f35b04") +
+  geom_point(aes(x = frac_24, size = AreaSqKm), shape = 21, fill = "#f35b04") +
   geom_smooth(aes(x = frac_24), method = lm, se = FALSE, color = "#f35b04") +
   geom_smooth(aes(x = Developed), method = lm, se = FALSE, color = "black") +
   labs(x = "Developed Land Cover (%)", y = "DIC (mg/L)") +
@@ -94,4 +102,12 @@ June2023_synoptic %>%
 
   theme_mb1()
 
+
+
+
+June2023_synoptic %>%
+  subset(parameter == "SpC") %>%
+  ggplot(aes(y = result_value)) +
+  geom_point(aes(x = AreaSqKm, size = Forest), shape = 21, fill = "#7678ed") +
+  theme_mb1()
 ```

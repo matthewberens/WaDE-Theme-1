@@ -92,7 +92,7 @@ WaDE_sites_landuse <- st_intersection(EFPC_catchments_landuse, WaDE_sites) %>%
   dplyr::select(-c(AreaSqKm.1))
 
 #Export combined land use calcualtions with sampling locations
-st_write(WaDE_sites_landuse, "GIS_data/WaDE_sites_landuse.gpkg", update = TRUE)
+st_write(WaDE_sites_landuse, "GIS_data/WaDE_sites_landuse.gpkg", append = FALSE)
 ```
 
 ```{r, include = TRUE, echo = FALSE, message = FALSE, warning=FALSE}

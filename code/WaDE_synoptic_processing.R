@@ -32,7 +32,7 @@ data_formatted <- sampling_data %>%
                        ifelse(parameter %in% c("pH", "SpC", "temp"), "CHEM",
                        ifelse(parameter %in% c("DOC", "DIC"), "C",
                        ifelse(parameter %in% c("SO4", "Cl", "NO3", "PO4"), "ANION",
-                       ifelse(parameter %in% c("Mg", "Ca", "Na", "K"), "CATION", ""))))),
+                       ifelse(parameter %in% c("Mg", "Ca", "Na", "K", "Si"), "CATION", ""))))),
          sample_date = mdy(sample_date),
          sample_time = hm(sample_time))
 
