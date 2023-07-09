@@ -1,5 +1,6 @@
 #Functions and Packages
-#Erin C Rooney
+#WaDE SFA
+#Matthew J Berens
 
 # packages
 library(tidyverse)
@@ -19,6 +20,7 @@ library(nhdplusTools)
 library(FedData)
 library(magrittr)
 library(mapview)
+library(ggnewscale)
 mapviewOptions(
   basemaps = c("CartoDB.Positron", "OpenTopoMap", "Esri.WorldImagery", "Esri.WorldShadedRelief"),
   homebutton = FALSE,

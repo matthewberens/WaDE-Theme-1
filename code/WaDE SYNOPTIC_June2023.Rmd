@@ -109,5 +109,6 @@ June2023_synoptic %>%
   subset(parameter == "SpC") %>%
   ggplot(aes(y = result_value)) +
   geom_point(aes(x = AreaSqKm, size = Forest), shape = 21, fill = "#7678ed") +
-  theme_mb1()
+  theme_mb1() +
+  labs(x = "Catchment Area (Sq Km)", y = "Conductiviy")
 ```
