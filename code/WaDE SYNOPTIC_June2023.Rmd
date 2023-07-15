@@ -88,27 +88,24 @@ June2023_synoptic <- merge(June2023_synoptic, st_drop_geometry(WaDE_sites_landus
 June2023_synoptic %>%
   subset(parameter == "SpC") %>%
   ggplot(aes(y = result_value)) +
-  geom_point(aes(x = frac_21, size = AreaSqKm), shape = 21, fill = "#7678ed") +
+  geom_point(aes(x = frac_21), shape = 21, fill = "#7678ed") +
   geom_smooth(aes(x = frac_21), method = lm, se = FALSE, color = "#7678ed") +
-  geom_point(aes(x = frac_22, size = AreaSqKm), shape = 21, fill = "#f7b801") +
+  geom_point(aes(x = frac_22), shape = 21, fill = "#f7b801") +
   geom_smooth(aes(x = frac_22), method = lm, se = FALSE, color = "#f7b801") +
-  geom_point(aes(x = frac_23, size = AreaSqKm), shape = 21, fill = "#f18701") +
+  geom_point(aes(x = frac_23), shape = 21, fill = "#f18701") +
   geom_smooth(aes(x = frac_23), method = lm, se = FALSE, color = "#f18701") +
-  geom_point(aes(x = frac_24, size = AreaSqKm), shape = 21, fill = "#f35b04") +
+  geom_point(aes(x = frac_24), shape = 21, fill = "#f35b04") +
   geom_smooth(aes(x = frac_24), method = lm, se = FALSE, color = "#f35b04") +
-  geom_smooth(aes(x = Developed), method = lm, se = FALSE, color = "black") +
+  #geom_point(aes(x = Developed), shape = 21, fill = "#f35b04") +
+  #geom_smooth(aes(x = Developed), method = lm, se = FALSE, color = "black") +
   labs(x = "Developed Land Cover (%)", y = "DIC (mg/L)") +
   #FFD0D0, #FF8B8B, #FF4545, #FF0000
 
   theme_mb1()
 
-
-
-
 June2023_synoptic %>%
-  subset(parameter == "SpC") %>%
-  ggplot(aes(y = result_value)) +
-  geom_point(aes(x = AreaSqKm, size = Forest), shape = 21, fill = "#7678ed") +
-  theme_mb1() +
-  labs(x = "Catchment Area (Sq Km)", y = "Conductiviy")
+  subset(parameter == "DIC") %>%
+  lm(result_value ~ Developed,.) %>%
+  summary()
+  
 ```
