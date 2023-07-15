@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 + [ORNL WaDE SFA](https://wade.ornl.gov/) - Webpage for project
 
 
-### Development
+### Repository Development
 + [Matthew Berens](https://www.ornl.gov/staff-profile/matthew-j-berens) - Environmental Sciences Division, Oak Ridge National Laboratory
 
 
