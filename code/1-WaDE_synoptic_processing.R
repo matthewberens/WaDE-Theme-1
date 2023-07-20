@@ -58,7 +58,7 @@ data_LOD <- left_join(data_transform, WaDE_ddl, by = "parameter") %>%
   mutate(detection_FLAG = ifelse(parameter %in% c("pH", "temp", "SpC", "depth"), "NONE",
                           ifelse(result_value < ddl, "<", "NONE")),
          result_value = ifelse(detection_FLAG == "<", ddl/2, result_value),
-         result_value = ifelse(constituent == "METALS", result_value * 1000, result_value)) #Adjust units for metals to MG/L
+         result_value = ifelse(constituent == "METALS", result_value / 1000, result_value)) #Adjust units for metals to MG/L
 
 # Step 6. Export processed data as csv --------------------------------------------------
 

@@ -84,7 +84,8 @@ EFPC_catchments_landuse <- merge(EFPC_catchments, landuse_fracs, by = "OBJECTID"
          Grassland = frac_71,
          Pasture = frac_81,
          Wetland = frac_90 + frac_95,
-         Herbaceous = frac_52 + frac_71 + frac_81)
+         Herbaceous = frac_52 + frac_71 + frac_81,
+         OBJECTID = as.character(OBJECTID))
  
 
 #Merge the catchment land use percentages with the sampling site locations
@@ -96,6 +97,82 @@ st_write(EFPC_catchments_landuse, "GIS_data/EFPC_catchments_landuse.gpkg", appen
 
 st_write(WaDE_sites_landuse, "GIS_data/WaDE_sites_landuse.gpkg", append = FALSE)
 ```
+
+
+
+Next, group the subcatchments together into one larger catchment that encompasses and entire tributary network for each site
+```{r, message = FALSE, warning = FALSE}
+catchment_bins <- rbind(
+data.frame("site_name" = "NBO1", "OBJECTID" = "89458"),
+data.frame("site_name" = "NBO2", "OBJECTID" = c("238691","100959")),
+data.frame("site_name" = "NBO3", "OBJECTID" = "100959"),
+data.frame("site_name" = "NBO4", "OBJECTID" = "102476"),
+data.frame("site_name" = "NBO5", "OBJECTID" = c("231934","242844","98890","99751","99669")),
+data.frame("site_name" = "NBO6", "OBJECTID" = "101341"),
+data.frame("site_name" = "MTN4", "OBJECTID" = "90316"),
+data.frame("site_name" = "MTN3", "OBJECTID" = c("90316","257888","90620")),
+data.frame("site_name" = "MTN2", "OBJECTID" = c("90316","257888","90620")),
+data.frame("site_name" = "MTN1.3", "OBJECTID" = "93594"),
+data.frame("site_name" = "MTN1.2", "OBJECTID" = c("90316","257888","90620")),
+data.frame("site_name" = "MTN1.1", "OBJECTID" = c("245543","93594","90316","257888","90620")),
+data.frame("site_name" = "MCA4", "OBJECTID" = c("238228","91132","90546")),
+data.frame("site_name" = "MCA3.3", "OBJECTID" = c("89979")),
+data.frame("site_name" = "MCA3.2", "OBJECTID" = c("91501")),
+data.frame("site_name" = "MCA3.1", "OBJECTID" = c("231863", "91501", "89979")), 
+data.frame("site_name" = "MCA2" , "OBJECTID" = c("238322","238228","91132","90546","231863", "91501", "89979")),
+data.frame("site_name" = "MCA1" , "OBJECTID" = c("238322","238228","91132","90546","231863", "91501", "89979","90467", "90031")),
+data.frame("site_name" = "WBK1" , "OBJECTID" = c("245547","94989")),
+data.frame("site_name" = "WBK2" , "OBJECTID" = c("245547","94989")),
+data.frame("site_name" = "WBK3" , "OBJECTID" = c("93685")),
+data.frame("site_name" = "BSL8" , "OBJECTID" = c("81824")),
+data.frame("site_name" = "BSL7" , "OBJECTID" = c("73872")),
+data.frame("site_name" = "BSL6" , "OBJECTID" = c("85970")),
+data.frame("site_name" = "BSL5.3" , "OBJECTID" = c("258680")),
+data.frame("site_name" = "BSL5.2" , "OBJECTID" = c("72273")),
+data.frame("site_name" = "BSL5.1" , "OBJECTID" = c("238341","258680","72273")),
+data.frame("site_name" = "BSL4.3" , "OBJECTID" = c("73872")),
+data.frame("site_name" = "BSL4.2" , "OBJECTID" = c("81824")),
+data.frame("site_name" = "BSL4.1" , "OBJECTID" = c("245291","81824","73872")),
+data.frame("site_name" = "BSL3.3" , "OBJECTID" = c("238341","258680","72273")),
+data.frame("site_name" = "BSL3.2" , "OBJECTID" = c("85970")),
+data.frame("site_name" = "BSL3.1" , "OBJECTID" = c("85970","238341","258680","72273")),
+data.frame("site_name" = "BSL2.3" , "OBJECTID" = c("85970","238341","258680","72273")),
+data.frame("site_name" = "BSL2.2" , "OBJECTID" = c("245291","81824","73872")),
+data.frame("site_name" = "BSL2.1" , "OBJECTID" = c("85970","238341","258680","72273","245291","81824","73872")),
+data.frame("site_name" = "BSL1.3" , "OBJECTID" = c("85970","238341","258680","72273","245291","81824","73872")),
+data.frame("site_name" = "BSL1.2" , "OBJECTID" = c("241710")),
+data.frame("site_name" = "BSL1.1" , "OBJECTID" = c("85970","238341","258680","72273","245291","81824","73872","95129","241710"))
+)
+
+catchments_binned <- merge(EFPC_catchments, catchment_bins, by = "OBJECTID") %>% 
+    group_by(site_name) %>%
+    summarise(geometry = sf::st_union(geometry)) %>%
+    ungroup() %>%
+    st_as_sf() %>%
+    mutate(AreaSqKm = st_area(geometry)/1000000)
+
+#This code calculates the zonal statistics for each of the EFPC catchments. The results are exported as a df that is saved as 
+landuse_bins <- exact_extract(nlcd_2019, catchments_binned, fun = 'frac', force_df = TRUE)
+
+landuse_bins$site_name = catchments_binned$site_name
+
+EFPC_catchments_binned <- merge(catchments_binned, landuse_bins, by = "site_name") %>%
+  
+  mutate(Developed = frac_21 + frac_22 + frac_23 + frac_24,
+         Water = frac_11,
+         Forest = frac_41 + frac_42 + frac_43,
+         Shrub = frac_52,
+         Grassland = frac_71,
+         Pasture = frac_81,
+         Wetland = frac_90 + frac_95,
+         Herbaceous = frac_52 + frac_71 + frac_81)
+
+#Export combined land use calculations with sampling locations
+st_write(EFPC_catchments_binned, "GIS_data/EFPC_LU_catchments_binned.gpkg", append = FALSE)
+
+```
+
+
 
 ```{r, include = TRUE, echo = FALSE, message = FALSE, warning=FALSE}
 mapview(WaDE_sites_landuse, layer.name = "Sampling Locations", zcol = "network", alpha = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites_landuse$network)), "Spectral"))+

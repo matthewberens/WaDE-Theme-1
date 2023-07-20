@@ -23,6 +23,7 @@ EFPC_fl <- st_set_crs(read_sf("GIS_data/EFPC Flowlines.shp"), 4326)
 EFPC_main <- st_set_crs(read_sf("GIS_data/East Fork Poplar Creek.shp"), 4326)
 EFPC_catchments <- st_set_crs(read_sf("GIS_data/EFPC Catchments.shp"), 4326)
 WaDE_sites_landuse <- st_set_crs(read_sf("GIS_data/WaDE_sites_landuse.gpkg"), 4326)
+EFPC_LU_catchments_binned <- st_set_crs(read_sf("GIS_data/EFPC_LU_catchments_binned.gpkg"), 4326)
 ```
 
 
@@ -81,31 +82,31 @@ map_Apr2023 | map_June2023
 
 
 ```{r, message=FALSE, warning = FALSE, fig.cap="Stuff"}
-June2023_synoptic <- read.csv("processed/SYNOPTIC_2023-06-23.csv")
+June2023_synoptic_NObins <- merge(read.csv("processed/SYNOPTIC_2023-06-23.csv"), st_drop_geometry(WaDE_sites_landuse))
+June2023_synoptic_bins <- merge(read.csv("processed/SYNOPTIC_2023-06-23.csv"), st_drop_geometry(EFPC_LU_catchments_binned))
 
-June2023_synoptic <- merge(June2023_synoptic, st_drop_geometry(WaDE_sites_landuse))
+Apr2023_synoptic_NObins <- merge(read.csv("processed/SYNOPTIC_2023-04-12.csv"), st_drop_geometry(WaDE_sites_landuse))
+Apr2023_synoptic_bins <- merge(read.csv("processed/SYNOPTIC_2023-04-12.csv"), st_drop_geometry(EFPC_LU_catchments_binned))
 
-June2023_synoptic %>%
-  subset(parameter == "SpC") %>%
+NObins <- rbind(Apr2023_synoptic_NObins, June2023_synoptic_NObins) %>%
+  mutate(binned = "N") %>%
+  dplyr::select(-c(NHDPlusID, SourceFC, GridCode, VPUID, SHAPE_Leng, SHAPE_Area, project_name, network, theme, OBJECTID.1, OBJECTID))
+bins <- rbind(Apr2023_synoptic_bins, June2023_synoptic_bins) %>%
+  mutate(binned = "Y")
+
+
+
+rbind(NObins, bins) %>%
+  subset(parameter == "U") %>%
   ggplot(aes(y = result_value)) +
-  geom_point(aes(x = frac_21), shape = 21, fill = "#7678ed") +
-  geom_smooth(aes(x = frac_21), method = lm, se = FALSE, color = "#7678ed") +
-  geom_point(aes(x = frac_22), shape = 21, fill = "#f7b801") +
-  geom_smooth(aes(x = frac_22), method = lm, se = FALSE, color = "#f7b801") +
-  geom_point(aes(x = frac_23), shape = 21, fill = "#f18701") +
-  geom_smooth(aes(x = frac_23), method = lm, se = FALSE, color = "#f18701") +
-  geom_point(aes(x = frac_24), shape = 21, fill = "#f35b04") +
-  geom_smooth(aes(x = frac_24), method = lm, se = FALSE, color = "#f35b04") +
-  #geom_point(aes(x = Developed), shape = 21, fill = "#f35b04") +
-  #geom_smooth(aes(x = Developed), method = lm, se = FALSE, color = "black") +
-  labs(x = "Developed Land Cover (%)", y = "DIC (mg/L)") +
-  #FFD0D0, #FF8B8B, #FF4545, #FF0000
+  geom_smooth(aes(x = AreaSqKm, color = sample_date), method = lm, se = TRUE) +
+  geom_point(aes(x = AreaSqKm, fill = sample_date), shape = 21) +
+ 
+  #labs(x = "Developed Land Cover (%)", y = DIC"(mg/L)") +
+  theme_mb1() +
+  facet_grid(~binned) +
+  theme(aspect.ratio = 1)
 
-  theme_mb1()
 
-June2023_synoptic %>%
-  subset(parameter == "DIC") %>%
-  lm(result_value ~ Developed,.) %>%
-  summary()
   
 ```
