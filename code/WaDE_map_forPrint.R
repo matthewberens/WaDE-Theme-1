@@ -23,18 +23,18 @@ WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_locations.csv") %>%
 
 # Step 2. Load Synoptic Data, if desired ----------------------------------------------------
 synoptic_data <- read.csv("processed/SYNOPTIC_2023-06-23.csv")
-
+APR_synoptic_data <- read.csv("processed/SYNOPTIC_2023-04-12.csv")
 
 
 #Merge the sampling locations with the synoptic resuts.
 merged_siteData <- merge(WaDE_sites, synoptic_data, by = "site_name")
-
+APR_merged_siteData <- merge(WaDE_sites, APR_synoptic_data, by = "site_name")
 
 
 
 # Step 3. Create map of locations -----------------------------------------------------------
 #If you want to save the map, uncomment Line 29 and give the map a name.
-map_name <- 
+#April2023_flowstatus <- 
   
 ggplot() +
 
@@ -46,16 +46,16 @@ ggplot() +
 #For lines 42-59, select the 2-line pair that corresponds to the land use that you want to show.  
  
 #Use this line for no fill
-  #geom_sf(data = EFPC_catchments_landuse, fill = NA, col = "black", linetype = "dotted") +
+  geom_sf(data = EFPC_catchments_landuse, fill = NA, col = "black", linetype = "dotted") +
   
 #Use these two lines for forested land cover
   #geom_sf(data = EFPC_catchments_landuse, aes(fill = Forest), col = "black", linetype = "dotted") +
   #scale_fill_gradientn(colours = terrain.colors(50), trans = 'reverse') +
 
 #Use these two lines for developed land cover 
-  geom_sf(data = EFPC_catchments_landuse, aes(fill = Developed), col = "black", linetype = "dotted") +
+  #geom_sf(data = EFPC_catchments_landuse, aes(fill = Developed), col = "black", linetype = "dotted") +
   #scale_fill_distiller(palette  = "Reds", direction = 1) +
-  scale_fill_gradient(low = "#4A9E48", high = "red") +
+  #scale_fill_gradient(low = "#4A9E48", high = "red") +
   
 #Use these two lines for wetland land cover 
   #geom_sf(data = EFPC_catchments_landuse, aes(fill = Wetland), col = "black", linetype = "dotted") +
@@ -75,19 +75,22 @@ ggplot() +
   new_scale_fill() +
   
 #Run line 71 to just plot sampling locations
-  geom_sf(data = WaDE_sites, aes(fill = network), shape = 21, size = 4) +
-  scale_fill_brewer(palette  = "Set1") +
+  #geom_sf(data = WaDE_sites, aes(fill = network), shape = 21, size = 4) +
+  #scale_fill_brewer(palette  = "Set1") +
   
 #Run line 74-75 to show sampling results. Change "parameter" to the paramater of interest. 
-  #geom_sf(data = merged_siteData %>% subset(parameter == "Ca" & !is.na(result_value)), aes(fill = result_value) , shape = 21, size = 4) +
-  #geom_sf(data = merged_siteData %>% subset(parameter == "depth"), aes(fill = flow_status) , shape = 21, size = 6) +
-  #scale_fill_distiller(palette  = "RdYlBu", direction = -1) +
+  geom_sf(data = merged_siteData %>% subset(parameter == "Si" & !is.na(result_value)), aes(fill = result_value) , shape = 21, size = 6) +
+  #geom_sf(data = APR_merged_siteData, aes(fill = flow_status) , shape = 21, size = 6) +
+  scale_fill_distiller(palette  = "RdYlBu", direction = -1) +
+  #scale_fill_gradient2(low="#4575b4", mid="#ffffbf", high="#d73027", midpoint = 400,
+   #                    limits = c(0, 800)) +
   #scale_fill_manual(values = c("#FF0505", "#9AC75D", "#FFCD05")) +
   
   #labs(fill = NULL) + #Name the legend for sampling location fill colors
   
 #Add map annotations, scales, and legends 
-  theme_classic() +
+  theme_map() 
+  theme(legend.position = "none")
   ggspatial::annotation_scale(
     location = "br",
     bar_cols = c("grey20", "white")) +
@@ -100,4 +103,4 @@ ggplot() +
 
 # Step 4. Save the map -----------------------------------------------------------
 #If you want to output the map, un-comment Line 67 and replace "map_name" with the name from Line 29.
-ggsave("map_name.eps")
+ggsave(plot = last_plot(), "output/Scale_SpC.png", width = 12, height = 9, units = "in")

@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = "~/Documents/GitHub/WaDE-Theme-1")
+setwd("~/Documents/GitHub/WaDE-Theme-1")
 ```
 
 ```{r, echo = FALSE, include=FALSE}
@@ -91,22 +92,25 @@ Apr2023_synoptic_bins <- merge(read.csv("processed/SYNOPTIC_2023-04-12.csv"), st
 NObins <- rbind(Apr2023_synoptic_NObins, June2023_synoptic_NObins) %>%
   mutate(binned = "N") %>%
   dplyr::select(-c(NHDPlusID, SourceFC, GridCode, VPUID, SHAPE_Leng, SHAPE_Area, project_name, network, theme, OBJECTID.1, OBJECTID))
+
 bins <- rbind(Apr2023_synoptic_bins, June2023_synoptic_bins) %>%
   mutate(binned = "Y")
 
 
 
-rbind(NObins, bins) %>%
-  subset(parameter == "U") %>%
+#rbind(NObins, bins) %>%
+bins %>%
+  subset(parameter %in% c("Mg", "Ca", "SpC", "DIC", "DOC", "Cl")) %>%
+  #subset(parameter == "SpC") %>%
   ggplot(aes(y = result_value)) +
-  geom_smooth(aes(x = AreaSqKm, color = sample_date), method = lm, se = TRUE) +
-  geom_point(aes(x = AreaSqKm, fill = sample_date), shape = 21) +
- 
-  #labs(x = "Developed Land Cover (%)", y = DIC"(mg/L)") +
+  geom_smooth(aes(x = Developed*100, color = sample_date), method = lm, se = TRUE) +
+  geom_point(aes(x = Developed*100, fill = sample_date), shape = 21, size = 4) +
+  labs(x = "Developed Land Cover (%)", y = "Cond. (uS/cm))") +
   theme_mb1() +
-  facet_grid(~binned) +
-  theme(aspect.ratio = 1)
+  facet_wrap(~parameter, scales = "free_y", nrow = 2) +
+  theme(aspect.ratio = 1, legend.position = "none", axis.title = element_text(size = 18), axis.text = element_text(size = 18))
 
 
+ggsave(plot = last_plot(), "output/comparisons.png", width = 12, height = 9, units = "in")
   
 ```

@@ -12,24 +12,22 @@ source("code/0-packages.R")
 
 # Step 1. Load Data ---------------------------------------------------------------------
 
-sampling_data = read.csv("raw/WaDE SYNOPTIC_2023-04-12.csv") 
+sampling_data = read.csv("raw/WaDE SYNOPTIC_2023-06-23.csv") 
 
 
 
-# Step 2. Format Date and Time  ---------------------------------------------------------
+# Step 2. Calculate Parameters  ----------------------------------------------------------------
+
+sampling_data$DIC = sampling_data$TC - sampling_data$DOC
+sampling_data$CaMg = sampling_data$Mg + sampling_data$Ca
+
+# Step 3. Format Date and Time  ---------------------------------------------------------
 
 sampling_data <- sampling_data %>%
   mutate(sample_date = lubridate::mdy(sample_date),
          sample_time = lubridate::hm(sample_time),
          Year = lubridate::year(sample_date),
          DOY = lubridate::yday(sample_date))
-
-
-
-# Step 3. Calculate TIC  ----------------------------------------------------------------
-
-sampling_data$DIC = sampling_data$TC - sampling_data$DOC
-
 
 
 
@@ -44,7 +42,8 @@ data_transform <- sampling_data %>%
          constituent = ifelse(parameter == "depth", "PHYS",
                        ifelse(parameter %in% c("pH", "SpC", "temp"), "CHEM",
                        ifelse(parameter %in% c("DOC", "TC", "DIC"), "C",
-                       ifelse(parameter %in% c("SO4", "Cl", "NO3", "PO4"), "ANION", "METALS")))))
+                       ifelse(parameter %in% c("SO4", "Cl", "NO3", "PO4"), "ANION", 
+                       ifelse(parameter %in% c("Mg", "Ca", "K", "Na", "CaMg"), "CATION", "TE"))))))
 
 
 
@@ -55,15 +54,13 @@ WaDE_ddl = read.csv("raw/WaDE DETECTION LIMITS.csv")
 
 #Merge ddls with analytical results and determine if flagged
 data_LOD <- left_join(data_transform, WaDE_ddl, by = "parameter") %>%
-  mutate(detection_FLAG = ifelse(parameter %in% c("pH", "temp", "SpC", "depth"), "NONE",
-                          ifelse(result_value < ddl, "<", "NONE")),
-         result_value = ifelse(detection_FLAG == "<", ddl/2, result_value),
-         result_value = ifelse(constituent == "METALS", result_value / 1000, result_value)) #Adjust units for metals to MG/L
+  mutate(detection_FLAG = ifelse(result_value < ddl, "<", "NONE"),
+         result_value = ifelse(detection_FLAG == "<", ddl/2, result_value))
 
 # Step 6. Export processed data as csv --------------------------------------------------
 
 #Save formatted data as a .csv
-write.csv(data_LOD, "processed/SYNOPTIC_2023-04-12.csv", row.names = FALSE)
+write.csv(data_LOD, "processed/SYNOPTIC_2023-06-23.csv", row.names = FALSE)
   
 
 
