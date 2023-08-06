@@ -12,7 +12,7 @@ source("code/0-packages.R")
 
 # Step 1. Load Data ---------------------------------------------------------------------
 
-sampling_data = read.csv("raw/WaDE SYNOPTIC_2023-06-23.csv") 
+sampling_data = read.csv("raw/WaDE SYNOPTIC_2023-04-12.csv") 
 
 
 
@@ -60,7 +60,7 @@ data_LOD <- left_join(data_transform, WaDE_ddl, by = "parameter") %>%
 # Step 6. Export processed data as csv --------------------------------------------------
 
 #Save formatted data as a .csv
-write.csv(data_LOD, "processed/SYNOPTIC_2023-06-23.csv", row.names = FALSE)
+write.csv(data_LOD, "processed/SYNOPTIC_2023-04-12.csv", row.names = FALSE)
   
 
 
