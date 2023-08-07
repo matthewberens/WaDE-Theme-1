@@ -44,6 +44,7 @@ EFPC_HUC <- st_set_crs(get_huc(id = "060102070302", buffer = 0.5, type = "huc12"
 EFPC_catchments <- st_set_crs(read_sf("GIS_data/EFPC Catchments.shp"), 4326)
 EFPC_fl <- st_set_crs(read_sf("GIS_data/EFPC Flowlines.shp"), 4326)
 EFPC_main <- st_set_crs(read_sf("GIS_data/East Fork Poplar Creek.shp"), 4326)
+geology <- st_set_crs(read_sf("GIS_data/TN/TN_geol_poly.shp"), 4326) 
 ```
 
 
@@ -145,6 +146,12 @@ mapview(EFPC_catchments_landuse, zcol = "Herbaceous", layer.name = "Herbaceous",
 
 ```
 
+```{r}
 
+geology_crop <- st_crop(geology, EFPC_HUC)
+
+mapview(geology_crop, alpha.regions = 0.2, zcol = GENERALIZE, color = "black", legend = FALSE, lwd=1)
+
+```
 
 
