@@ -34,17 +34,7 @@ sampling_data <- sampling_data %>%
 # Step 4. Transform data and reshape data -----------------------------------------------
 
 data_transform <- sampling_data %>%
-  pivot_longer(-c("site_name":"medium", "Year","DOY"), values_to = "result_value", names_to = "parameter") %>%
-  mutate(unit = ifelse(parameter == "depth", "CM",
-                ifelse(parameter == "temp", "C",
-                ifelse(parameter == "pH", "UNITS",
-                ifelse(parameter == "SpC", "uS/CM", "MG/L")))),
-         constituent = ifelse(parameter == "depth", "PHYS",
-                       ifelse(parameter %in% c("pH", "SpC", "temp"), "CHEM",
-                       ifelse(parameter %in% c("DOC", "TC", "DIC"), "C",
-                       ifelse(parameter %in% c("SO4", "Cl", "NO3", "PO4"), "ANION", 
-                       ifelse(parameter %in% c("Mg", "Ca", "K", "Na", "CaMg"), "CATION", "TE"))))))
-
+  pivot_longer(-c("site_name":"medium", "Year","DOY"), values_to = "result_value", names_to = "parameter") 
 
 
 # Step 5. Determine detection limit flags -----------------------------------------------

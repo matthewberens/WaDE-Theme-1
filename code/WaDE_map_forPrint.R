@@ -22,7 +22,7 @@ geology_units <- read.csv("GIS_data/TN/TN_units.csv")
 geology_merge <- merge(geology_crop, geology_units, by = "UNIT_LINK")
 
 #Synoptic sampling locations - set correct crs
-WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_locations.csv") %>%
+WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_SITES.csv") %>%
   st_as_sf(coords = c('longitude', 'latitude')) %>%
   st_set_crs(4326)
 
@@ -54,8 +54,8 @@ ggplot() +
   #geom_sf(data = EFPC_catchments_landuse, fill = NA, col = "black", linetype = "dotted") +
   
 #Use these two lines for forested land cover
-  #geom_sf(data = EFPC_catchments_landuse, aes(fill = Forest), col = "black", linetype = "dotted") +
-  #scale_fill_gradientn(colours = terrain.colors(50), trans = 'reverse') +
+  geom_sf(data = EFPC_catchments_landuse, aes(fill = Forest), col = "black", linetype = "dotted") +
+  scale_fill_gradientn(colours = terrain.colors(50), trans = 'reverse') +
   #scale_fill_distiller(palette  = "Greens", direction = 1) +
   
 #Use these two lines for developed land cover 
@@ -74,8 +74,8 @@ ggplot() +
   #geom_sf(data = EFPC_catchments_landuse, aes(fill = Herbaceous), col = "black", linetype = "dotted") +
   #scale_fill_distiller(palette  = "Oranges", direction = 1) +
 
-#Use these two lines for developed land cover 
-geom_sf(data = geology_merge, aes(fill = map_sym1), col = "black", linewidth = 0.5) +
+#Use these two lines for geology
+  #geom_sf(data = geology_merge, aes(fill = map_sym1), col = "black", linewidth = 0.5) +
   #scale_fill_viridis_d() +
 
 #--------------------
@@ -88,12 +88,12 @@ geom_sf(data = geology_merge, aes(fill = map_sym1), col = "black", linewidth = 0
   new_scale_fill() +
   
 #Run line 71 to just plot sampling locations
-  geom_sf(data = WaDE_sites,  aes(shape = EFK), size = 4) +
+  geom_sf(data = WaDE_sites,  aes(shape = EFK), fill = "#90e0ef", size = 4) +
   #scale_fill_brewer(palette  = "Set1") +
-  #scale_shape_manual(values = c(2,3)) +
+  scale_shape_manual(values = c(21,23)) +
   
 #Run line 74-75 to show sampling results. Change "parameter" to the paramater of interest. 
-  #geom_sf(data = bind_data %>% subset(parameter == "DIC" & DOY == 174 & !is.na(result_value)), aes(fill = result_value, shape = EFK), size = 6) +
+  #geom_sf(data = bind_data %>% subset(parameter == "NO3" & DOY == 102 & !is.na(result_value)), aes(fill = result_value, shape = EFK), size = 6) +
   #geom_sf(data = bind_data %>% subset(DOY == 102), aes(fill = flow_status, shape = EFK) , size = 6) +
   #scale_fill_distiller(palette  = "RdYlBu", direction = -1) +
   #scale_shape_manual(values = c(21,24)) +
@@ -104,9 +104,9 @@ geom_sf(data = geology_merge, aes(fill = map_sym1), col = "black", linewidth = 0
   #labs(fill = NULL) + #Name the legend for sampling location fill colors
   
 #Add map annotations, scales, and legends 
-  theme_map() +
-  #theme(legend.position = "none") +
-  guides(shape = "none")
+  theme_classic() +
+  theme(legend.position = "none") +
+  guides(shape = "none") +
   ggspatial::annotation_scale(
     location = "br",
     bar_cols = c("grey20", "white")) +
@@ -119,4 +119,4 @@ geom_sf(data = geology_merge, aes(fill = map_sym1), col = "black", linewidth = 0
 
 # Step 4. Save the map -----------------------------------------------------------
 #If you want to output the map, un-comment Line 67 and replace "map_name" with the name from Line 29.
-ggsave(plot = last_plot(), "output/geology_units.png", width = 12, height = 9, units = "in")
+ggsave(plot = last_plot(), "output/overview_map.png", width = 12, height = 9, units = "in")

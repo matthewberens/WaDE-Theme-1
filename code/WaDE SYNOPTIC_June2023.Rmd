@@ -123,7 +123,7 @@ APR2023_raw <- merge(read.csv("raw/WaDE SYNOPTIC_2023-04-12.csv"), WaDE_sites)
 rbind.fill(JUN2023_raw, APR2023_raw) 
 APR2023_raw %>%
   ggplot() +
-  geom_boxplot(aes(x = EFK, y = Fe, fill = EFK), width = 0.5, outlier.shape = NA) +
+  geom_boxplot(aes(x = EFK, y = U, fill = EFK), width = 0.5, outlier.shape = NA) +
   #geom_jitter(aes(x = EFK, y = Fe), width = 0.1) +
   #scale_y_log10() +
   #geom_point(aes(x = Mg, y = (TC-DOC), shape = EFK), fill = "blue", size = 2) +

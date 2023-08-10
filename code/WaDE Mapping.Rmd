@@ -40,7 +40,7 @@ data <- nlcd_2019@data@attributes[[1]] %>%
 
 The WaDE SFA sampling locations are stored in a csv in the GitHub directory. The points must be imported and converted to a spatial object with the `st_as_sf()` function. Ensure that the CRS is set to 4326.
 ```{r}
-WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_locations.csv") %>%
+WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_SITES.csv") %>%
    st_as_sf(coords = c('longitude', 'latitude')) %>%
     st_set_crs(4326)
 ```
@@ -174,14 +174,4 @@ st_write(EFPC_catchments_binned, "GIS_data/EFPC_LU_catchments_binned.gpkg", appe
 
 
 
-```{r, include = TRUE, echo = FALSE, message = FALSE, warning=FALSE}
-mapview(WaDE_sites_landuse, layer.name = "Sampling Locations", zcol = "network", alpha = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites_landuse$network)), "Spectral"))+
-mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1, layer.name = "NHD Flowlines") +
-mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2, layer.name = "EFK Main Branch") +
-mapview(EFPC_catchments_landuse, zcol = "Developed", layer.name = "Developed", col.regions = RColorBrewer::brewer.pal(10, "Reds"), hide = TRUE) +
-mapview(EFPC_catchments_landuse, zcol = "Forest", layer.name = "Forested", col.regions = RColorBrewer::brewer.pal(10, "Greens"), hide = TRUE) +
-mapview(EFPC_catchments_landuse, zcol = "Wetland", layer.name = "Wetlands", col.regions = RColorBrewer::brewer.pal(10, "Blues"), hide = TRUE) +
-mapview(EFPC_catchments_landuse, zcol = "Herbaceous", layer.name = "Herbaceous", col.regions = RColorBrewer::brewer.pal(10, "Oranges"), hide = TRUE)
-
-```
 
