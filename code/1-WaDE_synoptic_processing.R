@@ -50,7 +50,7 @@ data_LOD <- left_join(data_transform, WaDE_ddl, by = "parameter") %>%
 # Step 6. Export processed data as csv --------------------------------------------------
 
 #Save formatted data as a .csv
-write.csv(data_LOD, "processed/SYNOPTIC_2023-04-12.csv", row.names = FALSE)
+write.csv(data_LOD, "processed/SYNOPTIC_2023Apr.csv", row.names = FALSE)
   
 
 

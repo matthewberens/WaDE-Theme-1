@@ -1,13 +1,16 @@
 ---
-title: "WaDE Land Use Overview"
-author: "Matthew J Berens"
-date: "2023-06-27"
-output: html_document
+title: "Geospatial for Scott"
+author: "Matthew Berens"
+date: "2023-08-25"
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = "~/Documents/GitHub/WaDE-Theme-1")
+setwd("~/Documents/GitHub/WaDE-Theme-1")
 ```
 
 ```{r, echo = FALSE, include=FALSE}
@@ -16,7 +19,7 @@ source("code/0-packages.R")
 
 ### Introduction and Data Access
 The boundary of the EFPC watershed is accessed by the `get_huc()` function in the `nhdplusTools` package. The remaining shapefiles were accessed externally through the NHDPlus dataset and manually processed in QGIS. At this point, NHDPlus data for the EFPC watershed are not available through the `nhdplusTools` package.
-```{r, echo = FALSE, include=TRUE, message=FALSE, warning = FALSE}
+```{r, echo = TRUE, include=TRUE, message=FALSE, warning = FALSE}
 EFPC_HUC <- st_set_crs(get_huc(id = "060102070302", buffer = 0.5, type = "huc12"), 4326)
 EFPC_catchments <- st_set_crs(read_sf("GIS_data/EFPC Catchments.shp"), 4326)
 EFPC_fl <- st_set_crs(read_sf("GIS_data/EFPC Flowlines.shp"), 4326)
@@ -24,12 +27,14 @@ EFPC_main <- st_set_crs(read_sf("GIS_data/East Fork Poplar Creek.shp"), 4326)
 ```
 
 Land use data can be directly obtained from the National Land Classification Database (NLCD) through the `get_nlcd()` function in the `FedData` package. The data are available for select years from 2001-2019. The year can be selected by changing the `year = ####` option in the `get_nlcd()` function.
-```{r, include = TRUE, echo = FALSE, message = FALSE}
-nlcd_2019 <- FedData::get_nlcd(template = EFPC_HUC, label = "EFK NLCD 2019", year = 2019)
+```{r, include = TRUE, echo = TRUE, message = FALSE}
+nlcd_2019 <- FedData::get_nlcd(template = EFPC_HUC, label = "EFK NLCD 2019", 
+                               year = 2019)
 ```
 
 
-```{r, echo = FALSE, message=FALSE, include=FALSE, warning=FALSE}
+This chunk generates the correct color scheme for the NLCD data.
+```{r, echo = TRUE, message=TRUE, include=FALSE, warning=FALSE}
 #This block assigns the correct color scheme to the data based on the NLCD color legend.
 nlcd_2019 <- raster::as.factor(nlcd_2019)
 nlcd_2019@data@attributes[[1]] <- as.data.frame(nlcd_colors())
@@ -47,9 +52,9 @@ WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_SITES.csv") %>%
 
 
 ### Overview of Study Area
-The map below visualizes the study area for the WaDE SFA. The sampling locations are colorized based on their major tributary catchment. The EFK points have been separated into a unique class. The NLCD data can be toggled on/off from the legend.
-```{r, message=FALSE, warning=FALSE, include = TRUE, echo=FALSE}
-mapview(WaDE_sites, zcol = "network", layer.name = "Sampling Locations", alpha.region = 1, label = "site_name", col.regions = RColorBrewer::brewer.pal(length(unique(WaDE_sites$network)), "Spectral")) +
+Here is a simple map  that uses the `mapview` function to visualize the study area for the WaDE SFA. I colorized the sampling locations based on their tributary subcatchment. The NLCD data can be toggled on/off from the legend. Each of the shapefiles for the catchments, flowlines, etc. are added as separate mapview objects.
+```{r, message=TRUE, warning=FALSE, include = TRUE, echo=TRUE}
+mapview(WaDE_sites, zcol = "network", layer.name = "Sampling Locations", alpha.region = 1, label = "site_name", col.regions =   RColorBrewer::brewer.pal(length(unique(WaDE_sites$network)), "Spectral")) +
 mapview(EFPC_catchments, alpha.regions = 0.2, col.region = "lightgreen", color = "black", legend = FALSE, lwd=1, layer.name = "EFK Catchments") +
 mapview(EFPC_fl, color = "blue", legend = FALSE, lwd = 1, layer.name = "NHD Flowlines") +
 mapview(EFPC_main, color = "blue", legend = FALSE, lwd = 2, layer.name = "EFK Main Branch") +
@@ -59,24 +64,29 @@ mapview(nlcd_2019, col.regions = data, att = "Class", layer.name = "Landcover Cl
 
 
 
-Now, we can determine which catchment each of the WaDE are in and update the `WaDE_sites` data frame to include the catchment data
-```{r, message = FALSE, warning = FALSE}
+This function overlaps the WaDE sampling locations with the catchment boundary shapefile to determine which catchment each sampling location is in. The `WaDE_sites` data frame is then updataed to include the catchment data
+```{r, message = TRUE, warning = FALSE}
 WaDE_sites <- st_intersection(WaDE_sites, EFPC_catchments)
 ```
 
 
-### Exploring Land Use in the EFPC Watershed
-```{r, include = FALSE, echo = FALSE, message = FALSE, warning=FALSE}
+### Land Cover Calculations
+This chunk calculates the catchment-specific land use percentages from the NLCD and then bins them into larger categorical groupings (e.g., developed, water, forested). I save them as geopackages so they can be easily accessed later. Sometimes saving things as .shp files in R messes up the names of the data frames.
+```{r, include = TRUE, echo = TRUE, message = FALSE, warning=FALSE, results = 'hide'}
 
-#This code calculates the zonal statistics for each of the EFPC catchments. The results are exported as a df that is saved as 
+#This code calculates the zonal statistics for each of the EFPC catchments. 
+#The results are exported as a df that is saved as landuse_fracs
 
-landuse_fracs <- exact_extract(nlcd_2019, EFPC_catchments, fun = 'frac', force_df = TRUE)
+landuse_fracs <- exact_extract(nlcd_2019, EFPC_catchments, fun = 'frac', 
+                               force_df = TRUE)
 
 #Assign the catchments their correct OBJECTID
 landuse_fracs$OBJECTID <- EFPC_catchments$OBJECTID
 
-EFPC_catchments_landuse <- merge(EFPC_catchments, landuse_fracs, by = "OBJECTID") %>%
-  dplyr::select(-c(NHDPlusID, SourceFC, GridCode, VPUID, SHAPE_Leng, SHAPE_Area)) %>%
+EFPC_catchments_landuse <- merge(EFPC_catchments, landuse_fracs,
+                                 by = "OBJECTID") %>%
+                                dplyr::select(-c(NHDPlusID, SourceFC, 
+                                GridCode, VPUID, SHAPE_Leng, SHAPE_Area)) %>%
   mutate(Developed = frac_21 + frac_22 + frac_23 + frac_24,
          Water = frac_11,
          Forest = frac_41 + frac_42 + frac_43,
@@ -93,21 +103,22 @@ WaDE_sites_landuse <- st_intersection(EFPC_catchments_landuse, WaDE_sites) %>%
   dplyr::select(-c(AreaSqKm.1))
 
 #Export combined land use calculations with sampling locations
-st_write(EFPC_catchments_landuse, "GIS_data/EFPC_catchments_landuse.gpkg", append = FALSE)
+st_write(EFPC_catchments_landuse, "GIS_data/EFPC_catchments_landuse.gpkg", 
+         append = FALSE)
 
 st_write(WaDE_sites_landuse, "GIS_data/WaDE_sites_landuse.gpkg", append = FALSE)
 ```
 
 
 
-Next, group the subcatchments together into one larger catchment that encompasses and entire tributary network for each site
-```{r, message = FALSE, warning = FALSE}
+Next, I manually grouped the subcatchments together into one larger catchment that encompasses and entire upstream portion of the tributary network for each site
+```{r, message = FALSE, warning = FALSE, results = 'hide'}
 catchment_bins <- rbind(
 data.frame("site_name" = "NBO1", "OBJECTID" = "89458"),
 data.frame("site_name" = "NBO2", "OBJECTID" = c("238691","100959")),
 data.frame("site_name" = "NBO3", "OBJECTID" = "100959"),
 data.frame("site_name" = "NBO4", "OBJECTID" = "102476"),
-data.frame("site_name" = "NBO5", "OBJECTID" = c("231934","242844","98890","99751","99669")),
+data.frame("site_name" = "NBO5", "OBJECTID" = c("231934","242844", "98890","99751","99669")),
 data.frame("site_name" = "NBO6", "OBJECTID" = "101341"),
 data.frame("site_name" = "MTN4", "OBJECTID" = "90316"),
 data.frame("site_name" = "MTN3", "OBJECTID" = c("90316","257888","90620")),
@@ -119,7 +130,7 @@ data.frame("site_name" = "MCA4", "OBJECTID" = c("238228","91132","90546")),
 data.frame("site_name" = "MCA3.3", "OBJECTID" = c("89979")),
 data.frame("site_name" = "MCA3.2", "OBJECTID" = c("91501")),
 data.frame("site_name" = "MCA3.1", "OBJECTID" = c("231863", "91501", "89979")), 
-data.frame("site_name" = "MCA2" , "OBJECTID" = c("238322","238228","91132","90546","231863", "91501", "89979")),
+data.frame("site_name" = "MCA2" , "OBJECTID" = c("238322","238228","91132","90546","231863", "91501","89979")),
 data.frame("site_name" = "MCA1" , "OBJECTID" = c("238322","238228","91132","90546","231863", "91501", "89979","90467", "90031")),
 data.frame("site_name" = "WBK1" , "OBJECTID" = c("245547","94989")),
 data.frame("site_name" = "WBK2" , "OBJECTID" = c("245547","94989")),
@@ -151,12 +162,15 @@ catchments_binned <- merge(EFPC_catchments, catchment_bins, by = "OBJECTID") %>%
     st_as_sf() %>%
     mutate(AreaSqKm = st_area(geometry)/1000000)
 
-#This code calculates the zonal statistics for each of the EFPC catchments. The results are exported as a df that is saved as 
-landuse_bins <- exact_extract(nlcd_2019, catchments_binned, fun = 'frac', force_df = TRUE)
+#This code calculates the zonal statistics for each of the EFPC catchments. 
+#The results are exported as a df that is saved as landuse_bins
+landuse_bins <- exact_extract(nlcd_2019, catchments_binned, fun = 'frac', 
+                              force_df = TRUE)
 
 landuse_bins$site_name = catchments_binned$site_name
 
-EFPC_catchments_binned <- merge(catchments_binned, landuse_bins, by = "site_name") %>%
+EFPC_catchments_binned <- merge(catchments_binned, landuse_bins, 
+                                by = "site_name") %>%
   
   mutate(Developed = frac_21 + frac_22 + frac_23 + frac_24,
          Water = frac_11,
@@ -168,7 +182,8 @@ EFPC_catchments_binned <- merge(catchments_binned, landuse_bins, by = "site_name
          Herbaceous = frac_52 + frac_71 + frac_81)
 
 #Export combined land use calculations with sampling locations
-st_write(EFPC_catchments_binned, "GIS_data/EFPC_LU_catchments_binned.gpkg", append = FALSE)
+st_write(EFPC_catchments_binned, "GIS_data/EFPC_LU_catchments_binned.gpkg",
+         append = FALSE)
 
 ```
 
