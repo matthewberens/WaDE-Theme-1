@@ -16,11 +16,11 @@ EFPC_catchments_landuse <- st_set_crs(read_sf("GIS_data/EFPC_catchments_landuse.
 EFPC_fl <- st_set_crs(read_sf("GIS_data/EFPC Flowlines.shp"), 4326) #EFPC NHD flowlines
 EFPC_main <- st_set_crs(read_sf("GIS_data/East Fork Poplar Creek.shp"), 4326) #EFPC main branch
 EFPC_LU_catchments_binned <- st_set_crs(read_sf("GIS_data/EFPC_LU_catchments_binned.gpkg"), 4326)
-WBK_elev <- raster("GIS_data/WBK_elevation.tif")
-geology <- st_set_crs(read_sf("GIS_data/TN/TN_geol_poly.shp"), 4326)
-geology_crop <- st_intersection(geology, EFPC_HUC) 
-geology_units <- read.csv("GIS_data/TN/TN_units.csv")
-geology_merge <- merge(geology_crop, geology_units, by = "UNIT_LINK")
+#WBK_elev <- raster("GIS_data/WBK_elevation.tif")
+#geology <- st_set_crs(read_sf("GIS_data/TN/TN_geol_poly.shp"), 4326)
+#geology_crop <- st_intersection(geology, EFPC_HUC) 
+#geology_units <- read.csv("GIS_data/TN/TN_units.csv")
+#geology_merge <- merge(geology_crop, geology_units, by = "UNIT_LINK")
 
 # Step 2. Load Synoptic Sampling Locations, set correct CRS ---------------------------------
 WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_SITES.csv") %>%
@@ -30,10 +30,10 @@ WaDE_sites <- read.csv("raw/WaDE SYNOPTIC_SITES.csv") %>%
 # Step 3. Load Synoptic Data, if desired ----------------------------------------------------
 setwd("~/Documents/GitHub/Wade-Theme-1/processed")
 alldata <- do.call(rbind, lapply(dir(),read.csv))
-setwd("~/Documents/GitHub/Wade-Theme-1")
 
 #Merge the sampling locations with the synoptic resuts.
 merged_siteData <- merge(WaDE_sites, alldata, by = "site_name")
+#merged_siteData <- merge(WaDE_sites, STIC2023, by = "site_name")
 
 
 # Step 4. Create map of locations -----------------------------------------------------------
@@ -43,7 +43,7 @@ merged_siteData <- merge(WaDE_sites, alldata, by = "site_name")
 ggplot() +
 
 #Begin with the EFPC watershed outline 
-  geom_sf(data = EFPC_HUC, fill = NA, col = "#0E4C92", linewidth = 2) +
+  geom_sf(data = EFPC_HUC, fill = NA, col = "#0E4C92", linewidth = 1) +
   new_scale_fill() +
   
 #-------------------
@@ -84,18 +84,19 @@ ggplot() +
   new_scale_fill() +
   
 #Run line 71 to just plot sampling locations. DOY is the date of sampling.
-  geom_sf(data = subset(merged_siteData, DOY == "102"),  aes(shape = EFK, fill = flow_status), size = 4) +
-  scale_fill_brewer(palette  = "Set1") +
-  scale_shape_manual(values = c(21,23)) +
+  #geom_sf(data = subset(merged_siteData, DOY == "102"),  aes(fill = flow_status), size = 5, shape = 21) +
+  geom_sf(data = merged_siteData,  aes(fill = Mean), size = 4, shape = 21) +
+  #scale_fill_brewer(palette  = "Set1") +
+  #scale_shape_manual(values = c(21,23)) +
   
 #Run line 74-75 to show sampling results. Change "parameter" to the parameter of interest. 
   #geom_sf(data = bind_data %>% subset(parameter == "NO3" & DOY == 102 & !is.na(result_value)), aes(fill = result_value, shape = EFK), size = 6) +
   #geom_sf(data = bind_data %>% subset(DOY == 102), aes(fill = flow_status, shape = EFK) , size = 6) +
   #scale_fill_distiller(palette  = "RdYlBu", direction = -1) +
   #scale_shape_manual(values = c(21,24)) +
-  #scale_fill_gradient2(low="#4575b4", mid="#ffffbf", high="#d73027", midpoint = 800/2,
-   #                    limits = c(0, 800)) +
-  scale_fill_manual(values = c("#FF0505", "#9AC75D", "#FFCD05")) +
+  scale_fill_gradient2(high="#4575b4", mid="#ffffbf", low="#d73027", midpoint = 50,
+                       limits = c(0, 100)) +
+  #scale_fill_manual(values = c("#FF0505", "#9AC75D", "#FFCD05")) +
   
   #labs(fill = NULL) + #Name the legend for sampling location fill colors
   
@@ -103,6 +104,7 @@ ggplot() +
   theme_map() +
   theme(legend.position = "none") 
   guides(shape = "none") +
+  labs(fill = "Degree of Flow") +
   ggspatial::annotation_scale(
     location = "br",
     bar_cols = c("grey20", "white")) +
@@ -115,4 +117,4 @@ ggplot() +
 
 # Step 4. Save the map -----------------------------------------------------------
 #If you want to output the map, un-comment Line 67 and replace "map_name" with the name from Line 29.
-ggsave(plot = last_plot(), "output/overview_map.eps", width = 12, height = 9, units = "in")
+ggsave(plot = last_plot(), "output/degree_of_flow_outline.jpg", width = 12, height = 9, units = "in")
