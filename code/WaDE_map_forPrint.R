@@ -118,3 +118,5 @@ ggplot() +
 # Step 4. Save the map -----------------------------------------------------------
 #If you want to output the map, un-comment Line 67 and replace "map_name" with the name from Line 29.
 ggsave(plot = last_plot(), "output/degree_of_flow_outline.jpg", width = 12, height = 9, units = "in")
+
+write.csv(EFPC_LU_catchments_binned, "Stuff.csv")

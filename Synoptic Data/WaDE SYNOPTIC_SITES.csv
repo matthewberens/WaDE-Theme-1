@@ -1,0 +1,55 @@
+﻿siteID,Longitude,Latitude,Watershed,Network,Network_pos,Watershed_pos,Plot_order,Notes
+NBO1,-84.373972,35.948667,EFPC,North Boundary,1,1,1,Upstream side of culvert under road
+NBO2,-84.382512,35.953471,EFPC,North Boundary,2,1,2,Just upstream of fork on northern fork
+NBO3,-84.3778159,35.9581377,EFPC,North Boundary,3,1,3,Upstream side of road
+NBO4,-84.370939,35.964581,EFPC,North Boundary,4,1,4,Before culvert on north side of road
+NBO5,-84.3632813,35.9623703,EFPC,North Boundary,5,1,5,North side of road before road crossing
+NBO6,-84.3594832,35.9657918,EFPC,North Boundary,6,1,6,Park at gate and walk down grass path towards EFK5.4.
+MTN1.1,-84.3190233,35.9917456,EFPC,Montana,1,2,7,Just upstream of culvert
+MTN1.2,-84.3189111,35.9922904,EFPC,Montana,2,2,8,Just upstream of fork on W fork
+MTN1.3,-84.3193376,35.9920538,EFPC,Montana,3,2,9,Just upstream of fork on E fork
+MTN2,-84.3169132,35.9953664,EFPC,Montana,4,2,10,Just upstream of cuvert under Mockinbird
+MTN3,-84.3155179,35.9966196,EFPC,Montana,5,2,11,Access through Iversen's backyard
+MTN4,-84.3172639,35.9997379,EFPC,Montana,6,2,12,Walk down slope on N side of road. Sample ust before culvert
+MCA1,-84.303484,35.998559,EFPC,McArthur,1,3,13,Just downstream of culvert unter Oak Ridge Tpk
+MCA2,-84.3024433,36.0002255,EFPC,McArthur,2,3,14,Access from animal hospital parking lot
+MCA3.1,-84.3047188,36.0013071,EFPC,McArthur,3,3,15,N side of road
+MCA3.2,-84.3075083,36.0033728,EFPC,McArthur,4,3,16,N side of road
+MCA3.3,-84.308879,36.0025165,EFPC,McArthur,5,3,17,N side of road
+MCA4,-84.30126,36.00303,EFPC,McArthur,6,3,18,Obtained homeowner permission
+WBK1,-84.2777896,36.0116865,EFPC,Willow Brook,1,4,19,Just upstream of culvert under Robertsville
+WBK2,-84.279297,36.0121508,EFPC,Willow Brook,2,4,20,Just after side runoff pipe enters stream
+WBK3,-84.2851498,36.0120781,EFPC,Willow Brook,3,4,21,Upstream side of road
+BSL1.1,-84.2648449,36.0108124,EFPC,Bissell,1,5,22,Park in lot across Orau Way from Bissell Park
+BSL1.2,-84.26251,36.01151,EFPC,Bissell,2,5,23,Use parking lot on Badger Ave
+BSL1.3,-84.26319,36.01175,EFPC,Bissell,3,5,24,Use parking lot on Badger Ave
+BSL2.1,-84.2639509,36.0136344,EFPC,Bissell,4,5,25,Access from Oak Ridge History Museum
+BSL2.2,-84.2637642,36.0139505,EFPC,Bissell,5,5,26,Access from Oak Ridge History Museum
+BSL2.3,-84.26408,36.01424,EFPC,Bissell,6,5,27,Access from Oak Ridge History Museum
+BSL3.1,-84.2644455,36.0154176,EFPC,Bissell,7,5,28,Access from street across from community pool
+BSL3.2,-84.2645688,36.0158559,EFPC,Bissell,8,5,29,Access from street across from community pool
+BSL3.3,-84.2646386,36.0154957,EFPC,Bissell,9,5,30,Access from street across from community pool
+BSL4.1,-84.2584978,36.0181715,EFPC,Bissell,10,5,31,Access from Providence Rd
+BSL4.2,-84.2582403,36.0183798,EFPC,Bissell,11,5,32,Access from Providence Rd
+BSL4.3,-84.2585295,36.0183306,EFPC,Bissell,12,5,33,Access from Providence Rd
+BSL5.1,-84.2696131,36.0150356,EFPC,Bissell,13,5,34,directly across street from KAIROS
+BSL5.2,-84.2714486,36.0168412,EFPC,Bissell,14,5,35,
+BSL5.3,-84.2723552,36.0165765,EFPC,Bissell,15,5,36,
+BSL6,-84.2633635,36.0193798,EFPC,Bissell,16,5,37,
+BSL7,-84.2597739,36.020083,EFPC,Bissell,17,5,38,
+BSL8,-84.2533073,36.0246733,EFPC,Bissell,18,5,39,South side of road had better access during scouting
+EFK2.0,-84.374846,35.949108,EFPC,EFK,1,6,40,
+Bear Creek,-84.36667,35.947476,EFPC,EFK,2,6,41,
+EFK5.4,-84.358127,35.966476,EFPC,EFK,3,6,42,
+EFK7.9,-84.346409,35.969374,EFPC,EFK,4,6,43,
+Pinhook Branch,-84.335738,35.9702656,EFPC,EFK,5,6,44,
+Gum Hollow,-84.3354394,35.9754589,EFPC,EFK,6,6,45,
+EFK10.0,-84.335531,35.976278,EFPC,EFK,7,6,46,
+EFK11.3,-84.3273462,35.9825023,EFPC,EFK,8,6,47,
+EFK13.8,-84.3154217,35.9923436,EFPC,EFK,9,6,48,
+Mill Branch,-84.3033029,35.9962791,EFPC,EFK,10,6,49,
+EFK16.2,-84.300059,35.998879,EFPC,EFK,11,6,50,
+EFK18.2,-84.280972,36.006417,EFPC,EFK,12,6,51,
+Downtown,-84.267651,36.009743,EFPC,EFK,13,6,52,
+EFK20,-84.268534,36.00951,EFPC,EFK,14,6,53,
+EFK23.5,-84.239882,35.995334,EFPC,EFK,15,6,54,
