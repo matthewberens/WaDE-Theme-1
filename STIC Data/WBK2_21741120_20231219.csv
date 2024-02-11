@@ -1,4 +1,4 @@
-﻿#,DateTime,"Temp, °C","Intensity, Lux"
+﻿#,DateTime,Temp (°C),Intensity (Lux)
 1,10/20/23 07:27,22.812,0
 2,10/20/23 07:37,22.429,0
 3,10/20/23 07:47,22.429,0

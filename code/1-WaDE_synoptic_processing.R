@@ -11,6 +11,7 @@ setwd("~/Documents/GitHub/Wade-Theme-1")
 source("code/0-packages.R")
 
 # Step 1. Load Data ---------------------------------------------------------------------
+SITES = read.csv("Synoptic Data/EFPC_SiteData.csv")
 
 DATA = read.csv("Synoptic Data/WaDE SYNOPTIC_SUMMARY.csv") %>%
   select(-c(Date, Time)) %>%
@@ -23,13 +24,18 @@ DATA = read.csv("Synoptic Data/WaDE SYNOPTIC_SUMMARY.csv") %>%
   mutate(Unit  = sub("^[^_]*_", "", Parameter),
          Parameter = gsub( "_.*$", "", Parameter),
          Network = gsub("[^a-zA-Z]", "", Site),
-         Network = ifelse(Network %in% c("BSL", "MCA", "NBO", "MTN", "WBK"), Network, "EFK"),
+         Network = ifelse(Network %in% c("BSL", "MCA", "NBO", "MTN", "WBK", "EFK"), Network, "Other"),
          Group = ifelse(Network == "EFK", "EFK", substr(Site, 1, 4)),
-         Survey = my(paste(month(DateTime),"/",year(DateTime), sep = ""))) %>%
-  mutate(Sort = ifelse(Flow_state == "D", "Dry",
+         Survey = ymd_hms(paste(year(DateTime),"/",month(DateTime),"/",day(DateTime),"", "00:00:00", sep = ""))) %>%
+  mutate(Sort = ifelse(Flow_state == "F", "Flowing",
                 ifelse(Flow_state == "P", "Pooled",
-                ifelse(Value == -200, "<DL",
-                ifelse(Value == -300, "TBD", "Flowing")))))
+                ifelse(Flow_state == "W", "Wet", NA)))) %>%
+  mutate(Sort = ifelse(Value == -100, "ND",
+                    ifelse(Value == -200, "<DL",
+                    ifelse(Value == -300, "TBD", Sort)))) %>%
+  mutate(Sort = ifelse(Flow_state == "D", "Dry", Sort)) %>%
+  mutate(Trib = ifelse(Network == "EFK", "EFPC", "TRIB")) %>%
+  mutate(Sort = factor(Sort, levels = c("Flowing", "Pooled", "Dry", "<DL", "TBD")))
 
 # Step 2. Export processed data as csv --------------------------------------------------
 

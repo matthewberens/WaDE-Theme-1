@@ -21,11 +21,11 @@ DATA_box <- DATA %>%
 boxcolors <- c("TRIB" = "red", "EFPC" = "blue")
 boxfills <- c("TRIB" = "salmon", "EFPC" = "lightblue")
 
-sub <- "EC"
+sub <- "DIC"
 DATA_box %>%
   subset(Site != "FB") %>%
   subset(Synoptic == "Y") %>%
-  #subset(Network == "BSL") %>%
+  subset(Network == "BSL") %>%
   #subset(Survey == "2023-12-01") %>%
   subset(Parameter == sub) %>%
   ggplot(aes(x = as.factor(Survey), y = Value, fill = Trib)) +
@@ -35,4 +35,4 @@ DATA_box %>%
   theme_mb1() +
   labs(x = NULL, title = sub) +
   #facet_wrap(~Survey, labeller = function(x) format(x, "%B %Y"), nrow = 1, scales = "free_x") +
-  guides(color = guide_legend(nrow = 1)) 
+  guides(color = guide_legend(nrow = 1))  
